@@ -9,37 +9,44 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+url = 'http://www.glastonburyfestivals.co.uk/line-up/line-up-2017/?stage';
+var glastonburyPageHtml = "";
+request(url, function(error, response, html){
+  if(!error){
+    console.log("Got the glastonburyPageHtml!")
+    glastonburyPageHtml = html;
+  } else {
+    console.log("Failed getting glastonbury page")
+    process.exit()
+  }
+})
+
 var count = 0;
+
 router.get('/act/:choose', function(req, res){
-  url = 'http://www.glastonburyfestivals.co.uk/line-up/line-up-2017/?stage';
-  request(url, function(error, response, html){
-    // First we'll check to make sure no errors occurred when making the request
+  // First we'll check to make sure no errors occurred when making the request
+  var act = req.params.choose;
+  if(!act) {
+    console.log("No act provided")
+    res.send("No act provided")
+    return;
+  }
+  var actUCase = act.toUpperCase();
+  // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+  var $ = cheerio.load(glastonburyPageHtml);
 
-    if(!error){
-      var act = req.params.choose;
-      if(!act) {
-        console.log("No act provided")
-        res.send("No act provided")
-        return;
-      }
-      var actUCase = act.toUpperCase();
-      // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
-      var $ = cheerio.load(html);
-
-      // Finally, we'll define the variables we're going to capture
-      var time, day, stage;
-      var json = { time : "", day : "", stage : ""};
-      $('.col_5.lineup').filter(function() {
-        var data = $(this).find("a:contains('"+ actUCase + "')")
-        console.log(data.parent().next().text());
-        json.time = data.parent().next().text();
-        json.day = data.parent().parent().parent().children().first().text();
-        json.stage = data.parent().parent().parent().parent().parent().parent().parent().parent().prev().text();
-        console.log(json);
-        res.send(json);
-      });
-    }
-  })
+  // Finally, we'll define the variables we're going to capture
+  var time, day, stage;
+  var json = { time : "", day : "", stage : ""};
+  $('.col_5.lineup').filter(function() {
+    var data = $(this).find("a:contains('"+ actUCase + "')")
+    console.log(data.parent().next().text());
+    json.time = data.parent().next().text();
+    json.day = data.parent().parent().parent().children().first().text();
+    json.stage = data.parent().parent().parent().parent().parent().parent().parent().parent().prev().text();
+    console.log(json);
+    res.send(json);
+  });
 })
 
 
