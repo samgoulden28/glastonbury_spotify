@@ -40,7 +40,7 @@ app.set('view engine', 'ejs');
 app.use(express.static('public')).use(cookieParser());
 
 
-app.get('/login', function(req, res) {
+app.get('/', function(req, res) {
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
@@ -104,7 +104,7 @@ app.get('/callback', function(req, res) {
         });
 
         // we can also pass the token to the browser to make requests from there
-        res.redirect('/?' +
+        res.redirect('/app?' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token

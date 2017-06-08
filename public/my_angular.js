@@ -1,6 +1,7 @@
 angular.module('app', [])
   .controller('Controller', ['$scope', '$http', '$interval', function($scope, $http, $interval) {
     var spotifyUrl = "https://api.spotify.com/v1/me/player/currently-playing";
+    var refreshInterval = 5;
     console.log("Access token: " + access_token)
     $scope.showPlayer = "Show";
     $scope.togglePlayer = function() {
@@ -51,6 +52,6 @@ angular.module('app', [])
       });
     }
 
-    $interval(update, 3000);
+    $interval(update, refreshInterval * 100);
 
   }])
