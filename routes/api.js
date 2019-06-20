@@ -9,7 +9,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-url = 'http://www.glastonburyfestivals.co.uk/line-up/line-up-2017/?stage';
+url = 'https://www.glastonburyfestivals.co.uk/line-up/line-up-2019/?stage';
 var glastonburyPageHtml = "";
 request(url, function(error, response, html){
   if(!error){
@@ -43,7 +43,7 @@ router.get('/act/:choose', function(req, res){
     console.log(data.parent().next().text());
     json.time = data.parent().next().text();
     json.day = data.parent().parent().parent().children().first().text();
-    json.stage = data.parent().parent().parent().parent().parent().parent().parent().parent().prev().text();
+    json.stage = data.parent().parent().parent().parent().parent().parent().prev().text();
     console.log(json);
     res.send(json);
   });
