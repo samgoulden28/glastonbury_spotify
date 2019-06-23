@@ -1,4 +1,4 @@
 applications:
-- name: "Glastonbury 2017 Spotify Finder"
+- name: "Glastonbury2019Spotify"
   random-route: true
-  memory: 128M
+  memory: 1.625G

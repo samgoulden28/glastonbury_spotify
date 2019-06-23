@@ -1,13 +1,18 @@
 angular.module('app', [])
   .controller('Controller', ['$scope', '$http', '$interval', function($scope, $http, $interval) {
+    $scope.lastArtist = '';
+    $scope.stage = '';
     var spotifyUrl = "https://api.spotify.com/v1/me/player/currently-playing";
     var refreshInterval = 5;
     console.log("Access token: " + access_token)
     $scope.showPlayer = "Show";
+    $scope.conjunction = "is";
     $scope.togglePlayer = function() {
       $scope.showPlayer = $scope.showPlayer == "Hide" ? "Show" : "Hide"
     }
+
     function update() {
+      console.log("Updating");
       $http({
         method: 'GET',
         url: spotifyUrl,
@@ -29,22 +34,29 @@ angular.module('app', [])
         }
         $scope.fullArtist = $scope.fullArtist.substring(0, $scope.fullArtist.length - 2);
         $scope.artist = artists[0].name
+        if($scope.artist[$scope.artist.length -1] == 's') {
+          $scope.conjunction = "are";
+        }
         $scope.song = info.name
         $scope.album = info.album.name
-        console.log("Artist: " + $scope.artist)
-        $http({
-          method: 'GET',
-          url: "/api/act/" + $scope.artist
-        }).then(function successCallback2(response2) {
-          console.log("API OK! " + JSON.stringify(response2))
-          $scope.stage = response2.data.stage
-          $scope.time = response2.data.time
-          $scope.day = response2.data.day
-        }, function errorCallback(response2) {
-          // called asynchronously if an error occurs
-          // or server returns response with an error status.
-          console.log("API Error! " + response2)
-        });
+        console.log("Artist: " + $scope.artist + ", lastArtist: " + $scope.lastArtist)
+        if($scope.artist.trim() !== $scope.lastArtist.trim()) {
+          console.log("Artist changed!");
+          $http({
+            method: 'GET',
+            url: "/api/act/" + $scope.artist
+          }).then(function successCallback2(response2) {
+            console.log("API OK! " + JSON.stringify(response2))
+            $scope.stage = response2.data.stage
+            $scope.time = response2.data.time
+            $scope.day = response2.data.day
+          }, function errorCallback(response2) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+            console.log("API Error! " + response2)
+          });
+        }
+        $scope.lastArtist = $scope.artist;
       }, function errorCallback(response) {
         // called asynchronously if an error occurs
         // or server returns response with an error status.
@@ -52,6 +64,6 @@ angular.module('app', [])
       });
     }
 
-    $interval(update, refreshInterval * 100);
+    $interval(update, refreshInterval * 1000);
 
   }])

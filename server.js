@@ -6,9 +6,9 @@ var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
-var client_id = process.env.CLIENT_ID; // Your client id
+var client_id = process.env.CLIENT_ID ; // Your client id
 var client_secret = process.env.CLIENT_SECRET; // Your secret
-var redirect_uri = process.env.REDIRECT_URI; // Your redirect uri
+var redirect_uri = "http://glastonbury2019spotify-chatty-possum.eu-gb.mybluemix.net/callback"; // Your redirect uri
 
 var routes = require('./routes/index');
 var api = require('./routes/api');
@@ -53,7 +53,8 @@ app.get('/', function(req, res) {
       client_id: client_id,
       scope: scope,
       redirect_uri: redirect_uri,
-      state: state
+      state: state,
+      show_dialog: "true"
     }));
 });
 
@@ -66,27 +67,31 @@ app.get('/callback', function(req, res) {
   var state = req.query.state || null;
   var storedState = req.cookies ? req.cookies[stateKey] : null;
 
+  console.log("State: " + state + ", Code: " + code + "storedState: " + storedState)
+
   if (state === null || state !== storedState) {
+    console.log("state problem")
     res.redirect('/#' +
       querystring.stringify({
         error: 'state_mismatch'
       }));
   } else {
     res.clearCookie(stateKey);
+    console.log("Posting to " + authOptions)
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       form: {
         code: code,
         redirect_uri: redirect_uri,
-        grant_type: 'authorization_code'
-      },
-      headers: {
-        'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+        grant_type: 'authorization_code',
+        client_id: client_id,
+        client_secret: client_secret
       },
       json: true
     };
 
     request.post(authOptions, function(error, response, body) {
+      console.log("Posting!")
       if (!error && response.statusCode === 200) {
 
         var access_token = body.access_token,
@@ -98,18 +103,21 @@ app.get('/callback', function(req, res) {
           json: true
         };
 
+        console.log("Getting!")
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
           console.log(body);
         });
 
         // we can also pass the token to the browser to make requests from there
+        console.log("Redirecting!")
         res.redirect('/app?' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token
           }));
       } else {
+        console.log("Redirect failed!")
         res.redirect('/#' +
           querystring.stringify({
             error: 'invalid_token'
